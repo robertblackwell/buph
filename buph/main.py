@@ -39,7 +39,7 @@ def number_tranches(config: Config, bu_type: BackupType) -> int:
     ix = int(bu_type)
     return f[ix]()
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 def main():
     parser = define_cli_interface()
