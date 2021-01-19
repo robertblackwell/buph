@@ -4,9 +4,9 @@ Backup Blackwell Photos and LR Catalogs
  This is a backup program for Nina Blackwell's photos. It covers
  - photos that are part of a Lightroom catalog
  - the lightroom catalogs
- - two directories BeforeLightroom and BeforeLightroom2
+ - two directories BeforeLightroom and BeforeLightroom2 that are not part of a catalog
  
- This program is to be scheduled to run as a Windows servie or a cygwin cron job
+ This program is to be scheduled to run as a Windows service or a cygwin cron job
  
  Significant requirements or conditions:
  - there are multiple data sources and destinations.
