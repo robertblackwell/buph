@@ -9,6 +9,10 @@ def define_global_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--dry-run', dest='dry_run', action='store_true',
                         help='Dry run flag passed to rsync .\n Default false')
 
+    parser.add_argument('--quiet', dest='quiet', action='store_true',
+                        help='Run rsync with -q flag')
+
+
     parser.add_argument('--bu-type', dest='bu_type',
                         help='The type of backup c = catalogs, p = catalogued photos, u = uncatalogued photos')
 

@@ -5,68 +5,33 @@ import os.path
 from datetime import datetime
 import math
 from buph.config import Config
-# class Config:
-#     def __init__(self):
+import unittest
 
-#         self.tranches_catalogued_photos = [
-#             ["2005", "2006", "2007Sweden", "2008", "2009", "2009Russia-Rob", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2017-nw-mogfest"],
-#             ["2018*", "2019", "2020", "Kodak", "Specials", "Wedding-Richard&Lizzie"],
-#         ]
-#         self.tranches_uncatalogued_photos = [
-#             ["BeforeLightRoom", "BeforeLightRoom_2"]
-#         ]
-#         self.tranches_catalogs =[
-#             [
-#             "Catalog-12-18-strict",
-#             "Catalog-12TO18",
-#             "Catalog-2005-6-7-8",
-#             "Catalog-2008",
-#             "Catalog-2019-2020",
-#             "Catalog-8604warren",
-#             "Catalog-All",
-#             "Catalog-Australia2019",
-#             "Catalog-Master",
-#             "Catalog-SouthAmerica",
-#             "Kodak",
-#             ]
-#         ]
-#         self.tranche_sets = [
-#             self.tranches_catalogued_photos,
-#             self.tranches_uncatalogued_photos,
-#             self.tranches_catalogs
-#         ]
-#         self.destination_dirs = [
-#             "BUP_PHOTO", "LR_DUP", "Photographs"
-#         ]
+if __name__ == '__main__':
 
-#     def number_tranches_catalogued_photos(self):
-#         return len(self.tranches_catalogued_photos)
-    
-#     def number_tranches_uncatalogued_photos(self):
-#         return len(self.tranches_uncatalogued_photos)
-    
-#     def number_tranches_catalogues(self):
-#         return len(self.tranches_catalogs)
-    
-#     # determines how many distinct backup runs there should be - a run is a (tranche, a single destination)
-#     def number_of_backup_runs(self):
-#         runs_count = len(self.tranches_catalogued_photos) + len(self.tranches_uncatalogued_photos) + len(self.tranches_catalogs)
-#         return runs_count * len(self.destination_dirs)
-    
-#     def catalog_source_dir(self):
-#         return os.path.join(pathlib.Path.home(), "Pictures", "LightRoom")
-    
-#     def cataloged_photos_source_dir(self):
-#         return pathlib.Path("D:\\LightRoom")
-    
-#     def uncatalogued_photos_source_dir(self):
-#         return pathlib.Path("D:")
+    class TestConfig(unittest.TestCase):
+        def test_src_dirs(self):
+            config = Config()
+            x1 = config.catalog_destination_dir("e")
+            x2 = config.catalog_source_dir()
+            x3 = config.cataloged_photos_destination_dir("e")
+            x4 = config.cataloged_photos_source_dir()
+            x5 = config.uncatalogued_photos_destination_dir("e")
+            x6 = config.uncatalogued_photos_source_dir()
+            n = type(x6).__name__
+            self.assertEqual(type(x6).__name__, "WindowsPath")
+            self.assertEqual(type(x5).__name__, "WindowsPath")
+            self.assertEqual(type(x4).__name__, "WindowsPath")
+            self.assertEqual(type(x3).__name__, "WindowsPath")
+            self.assertEqual(type(x2).__name__, "WindowsPath")
+            self.assertEqual(type(x2).__name__, "WindowsPath")
+            y = str(x1)
+            self.assertEqual(str(x1), "E:\\Catalogs")
+            self.assertEqual(str(x2), "C:\\Users\\lightroom\\Pictures\\LightRoom")
+            self.assertEqual(str(x3), "E:\\LightRoom")
+            self.assertEqual(str(x4), "D:\\LightRoom")
+            self.assertEqual(str(x5), "E:\\uncatalogued")
+            self.assertEqual(str(x6), "D:\\")
+            print(x1,x2,x3,x4,x5,x6)
 
-#     def catalog_destination_dir(self, drive_letter):
-#         return os.path.join(drive_letter, "\\Catalogs")
-    
-#     def cataloged_photos_destination_dir(self, drive_letter):
-#         return pathlib.Path(drive_letter, "\\LightRoom")
-    
-#     def uncatalogued_photos_destination_dir(self, drive_letter):
-#         return pathlib.Path(drive_letter, "\\uncatalogued")
+    unittest.main()

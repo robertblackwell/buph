@@ -9,7 +9,7 @@ class Config:
     def __init__(self):
 
         self.tranches_catalogued_photos = [
-            ["2005", "2006", "2007Sweden", "2008", "2009", "2009Russia-Rob", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2017-nw-mogfest"],
+            ["2005", "2005", "2006", "2007Sweden", "2008", "2009", "2009Russia-Rob", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2017-nw-mogfest"],
             ["2018*", "2019", "2020", "Kodak", "Specials", "Wedding-Richard&Lizzie"],
         ]
         self.tranches_uncatalogued_photos = [
@@ -36,7 +36,7 @@ class Config:
             self.tranches_catalogs
         ]
         self.destination_dirs = [
-            "BUP_PHOTO", "LR_DUP", "Photographs"
+            "LR_DUP", "BUP_PHOTO", "Photographs"
         ]
 
     def number_tranches_catalogued_photos(self):
@@ -53,20 +53,23 @@ class Config:
         runs_count = len(self.tranches_catalogued_photos) + len(self.tranches_uncatalogued_photos) + len(self.tranches_catalogs)
         return runs_count * len(self.destination_dirs)
     
-    def catalog_source_dir(self):
-        return os.path.join(pathlib.Path.home(), "Pictures", "LightRoom")
+    def catalog_source_dir(self) -> pathlib.WindowsPath:
+        return pathlib.Path(pathlib.Path.home(), "Pictures", "LightRoom")
     
-    def cataloged_photos_source_dir(self):
+    def cataloged_photos_source_dir(self) -> pathlib.WindowsPath:
         return pathlib.Path("D:\\LightRoom")
     
-    def uncatalogued_photos_source_dir(self):
-        return pathlib.Path("D:")
+    def uncatalogued_photos_source_dir(self) -> pathlib.WindowsPath:
+        return pathlib.Path("D:\\")
 
-    def catalog_destination_dir(self, drive_letter):
-        return os.path.join(drive_letter, "\\Catalogs")
+    def catalog_destination_dir(self, drive_letter) -> pathlib.WindowsPath:
+        drive_letter = drive_letter.upper()
+        return pathlib.Path(drive_letter+":", "\\", "Catalogs")
     
-    def cataloged_photos_destination_dir(self, drive_letter):
-        return pathlib.Path(drive_letter, "\\LightRoom")
+    def cataloged_photos_destination_dir(self, drive_letter)  -> pathlib.WindowsPath:
+        drive_letter = drive_letter.upper()
+        return pathlib.Path(drive_letter+":", "\\", "LightRoom")
     
-    def uncatalogued_photos_destination_dir(self, drive_letter):
-        return pathlib.Path(drive_letter, "\\uncatalogued")
+    def uncatalogued_photos_destination_dir(self, drive_letter)  -> pathlib.WindowsPath:
+        drive_letter = drive_letter.upper()
+        return pathlib.Path(drive_letter+":", "\\", "uncatalogued")

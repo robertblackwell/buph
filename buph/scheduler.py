@@ -19,10 +19,11 @@ class BackupType(IntEnum):
     CATALOG = 2
 
 class BackupRequest:
-    def __init__(self, butype, tranche, drive_index):
+    def __init__(self, butype, tranche, drive_index, rsync_options=[]):
         self.type = butype
         self.tranche_index = tranche
         self.destination_drive_index = drive_index 
+        self.rsync_options = rsync_options
 
 class Scheduler:
     def __init__(self, config: Config, destination_drives: DestinationDrives):
@@ -58,7 +59,7 @@ class Scheduler:
         return result
         ts, t, d = result
         while not self.destination_drives.is_drive_index_available(d):
-            print("d is %d" % (d))
+            # print("d is %d" % (d))
             d = (d + 1) % self.destination_drives.nbr_available_drives()
         return (ts, t, d)
 

@@ -1,13 +1,11 @@
 import typing
 import subprocess 
-import pathlib 
-import os.path 
 from datetime import datetime
 import math
 
 class DestinationDrives:
     def __init__(self):
-        self.drive_names = "BUP_PHOTO", "LR_DUP", "Photographs"
+        self.drive_names = "LR_DUP", "BUP_PHOTO", "Photographs"
         self.available_destination_drives = {}
         self._discover_available_drives()
 

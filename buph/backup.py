@@ -1,32 +1,79 @@
-import typing
+from typing import List
 import subprocess 
-import pathlib 
+from pathlib import WindowsPath 
 import os.path 
 from datetime import datetime
 import math
 import unittest
+from buph.logger import buph_logger
 from buph.scheduler import BackupType, BackupRequest
 from buph.config import Config
 from buph.drives import DestinationDrives
+import buph.cygwin_rsync as cygwin
+
+rsync_options = "-archW"
+cygwin_bash = 'c:\\cygwin64\\bin\\bash'
+cygwin_rsync = 'c:\\cygwin64\\home\\lightroom\\projects\\backup-photos\\rsync_run.sh'
+
+
+def try_popen(cmd: List[str], where: str) -> int:
+    child = subprocess.Popen(cmd, cwd=where, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    # stdout, stderr = child.communicate()
+
+    while True:
+        output = child.stdout.readline()
+        if output == '' and child.poll() is not None:
+            break
+        if output:
+            buph_logger.info(output.strip())
+    rc = child.poll()
+    return rc
+
+def rsync_help():
+    cmd_list = [cygwin_bash, "-l", cygwin_rsync, "-h"]
+    buph_logger.info("rsync -h       %s" %(" ".join(cmd_list)))
+    if try_popen(cmd_list, "c:\\Users\\lightroom") != 0:
+        raise Exception("try_popen returns rc != 0")
+
 
 def rsync_cmd(opts, from_path, to_path):
     cmd = "rsync %s %s %s" % (opts, from_path, to_path)
     return cmd
 
-def bu_catalogued_photos(tranche, source_dir_path, destination_dir):
+def bu_catalogued_photos(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
     for t in tranche:
-        src = os.path.join(source_dir_path, t)
-        print("bu_catalogued_photos       ", rsync_cmd("-arvc", src, destination_dir))
+        src = WindowsPath(source_dir_path, t)
+        options_list = ["-archW", "--dry-run", "-v", 
+        ]
+        home = WindowsPath.home()
+        cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
+        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        if try_popen(cmd_list, str(WindowsPath.home())) != 0:
+            raise Exception("try_popen returns rc != 0")
 
-def bu_uncatalogued_photos(tranche, source_dir_path, destination_dir):
+def bu_uncatalogued_photos(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
     for t in tranche:
-        src = os.path.join(source_dir_path, t)
-        print("bu_uncatalogued_photos     ", rsync_cmd("-arvc", src, destination_dir))
+        src = WindowsPath(source_dir_path, t)
+        options_list = ["-archW", "--dry-run", "-v", 
+        ]
+        home = WindowsPath.home()
+        cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
+        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        if try_popen(cmd_list, str(WindowsPath.home())) != 0:
+            raise Exception("try_popen returns rc != 0")
 
-def bu_catalogs(tranche, source_dir_path, destination_dir):
+def bu_catalogs(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
     for t in tranche:
-        src = os.path.join(source_dir_path, t)
-        print("bu_catalogs                ", rsync_cmd("-arvc", src, destination_dir))
+        src = WindowsPath(source_dir_path, t)
+        options_list = ["-archW", "--dry-run", "-v", 
+            # "--exclude", '*\\ Previews.lrdata',
+            # "--exclude", 'Backups',
+        ]
+        home = WindowsPath.home()
+        cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
+        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        if try_popen(cmd_list, str(WindowsPath.home())) != 0:
+            raise Exception("try_popen returns rc != 0")
 
 def backup(config: Config, destination_drives: DestinationDrives, request: BackupRequest):
 
@@ -48,9 +95,9 @@ def backup(config: Config, destination_drives: DestinationDrives, request: Backu
     s = int(request.type)
     f = bu_for_set[s]
     tranche = config.tranche_sets[s][request.tranche_index]
-    src_dir = source_dir[s]
+    src_dir: WindowsPath = source_dir[s]
     dest_drive_letter =  destination_drives.drive_letter_for_index(request.destination_drive_index)
-    dest_dir = destination_dir_funcs[s](dest_drive_letter)
+    dest_dir: WindowsPath  = destination_dir_funcs[s](dest_drive_letter)
     if not os.path.isdir(src_dir):
         raise Exception("%s is not a directory" % (src_dir))
     if not os.path.isdir(dest_dir):

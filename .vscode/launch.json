@@ -25,7 +25,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/runner.py",
             "cwd":"${workspaceFolder}",
-            "args":["--dry-run", "--type=c", "--to-drive=h", "--log-actions"],
             "console": "integratedTerminal"
         },
     ]
