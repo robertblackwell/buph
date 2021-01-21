@@ -16,7 +16,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/runner.py",
-            "args":["--dry-run", "--bu-type", "c", "--bu-tranche", "0", "--to-drive", "e", "--log-actions"],
+            "args":["--bu-type", "c", "--bu-tranche", "0", "--to-drive", "e", "--log-actions"],
             "console": "integratedTerminal"
         },
         {

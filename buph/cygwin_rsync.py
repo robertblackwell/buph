@@ -7,6 +7,7 @@ rsync_options = "-archW"
 cygwin_bash = 'c:\\cygwin64\\bin\\bash'
 cygwin_rsync = 'c:\\cygwin64\\home\\lightroom\\projects\\buph\\buph\\rsync_run.sh'
 
+# this is a bit of a hack and needs tidying up
 def path_windows_to_posix(p: WindowsPath) -> PurePosixPath:
     x = p
     drive = x.drive
@@ -16,7 +17,6 @@ def path_windows_to_posix(p: WindowsPath) -> PurePosixPath:
     z = ["/cygdrive", drive_letter] + list(x.parts)[1:]
     pz = "/".join(z)
     pp = PurePosixPath("/".join(z))
-    print(pp)
     return pp
 
 

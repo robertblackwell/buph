@@ -7,7 +7,7 @@ from loguru import logger as guru_logger
 # @TODO fix the timezone
 
 def config_log_guru():
-    logpath = pathlib.WindowsPath(pathlib.WindowsPath.home(), "buph_{time}.log")
+    logpath = pathlib.WindowsPath(pathlib.WindowsPath.home(), "buph_logs", "buph_{time}.log")
     guru_logger.add(str(logpath), retention = "2 days")
     return guru_logger
 

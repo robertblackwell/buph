@@ -1,12 +1,12 @@
 from typing import Union, List
 import sys
-import subprocess 
-import pathlib 
-import os.path 
-from datetime import datetime
-import math
+
+import time
+from datetime import datetime, timedelta
+from timeit import default_timer as timer
+
 from buph.logger import buph_logger
-from buph.backup import backup
+from buph.backup import backup, BackupOptions
 from buph.config import Config
 from buph.drives import DestinationDrives, getDriveName
 from buph.scheduler import Scheduler, BackupRequest, BackupType
@@ -40,14 +40,22 @@ def number_tranches(config: Config, bu_type: BackupType) -> int:
     ix = int(bu_type)
     return f[ix]()
 
+def backup_options_from_cli(args) -> BackupOptions:
+    buopts = BackupOptions()
+    buopts.dryrun = args.dry_run
+    x = args.quiet
+    buopts.quiet = args.quiet
+    return buopts
+
+
 def backup_from_cli_args(
     config: Config, 
     dest_drives: DestinationDrives, 
     scheduler: Scheduler, 
-    args, 
-    rsync_options: List[str]=[]
+    backup_options: BackupOptions,
+    args
 ):
-    print("Backup bu-type %s to-drive: %s" % (args.bu_type, args.to_drive))
+    buph_logger.info("Backup bu-type %s to-drive: %s" % (args.bu_type, args.to_drive))
     bu_type = backup_type_from_cli(args.bu_type)
     if number_tranches(config, bu_type) > 1:
         if not args.bu_tranche:
@@ -61,38 +69,40 @@ def backup_from_cli_args(
     ix = dest_drives.drive_index(vol_name)
     if ix is None:
         raise Exception("could not find volumen name for drive %s" % (dl))
-    req = BackupRequest(bu_type, bu_tranche, ix, rsync_options)
-    backup(config, dest_drives, req)
+    req = BackupRequest(bu_type, bu_tranche, ix)
+    backup(config, dest_drives, req, backup_options)
 
-def backup_from_schedule(config: Config, dest_drives: DestinationDrives, scheduler: Scheduler, rsync_options: List[str] = []):
+def backup_from_schedule(
+    config: Config, 
+    dest_drives: DestinationDrives, 
+    scheduler: Scheduler, 
+    backup_options: BackupOptions
+):
     request = scheduler.backup_request_for_today()
-    request.rsync_options = rsync_options
-    backup(config, dest_drives, request)
+    backup(config, dest_drives, request, backup_options)
 
+def time_now_as_str():
+    now_time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    return now_time
+
+def elapsed_time_as_str(start_time):
+    elap = str(timedelta(seconds=timer() - start_time))
+    return elap
 
 __version__ = "0.0.3"
 
+@buph_logger.catch
 def main():
+    start_time = timer()
+    buph_logger.info("buph starting at %s" % (time_now_as_str()))
 
-    buph_logger.debug('Debug message, should only appear in the file.')
-    buph_logger.info('Info message, should appear in file and stdout.')
-    buph_logger.warning('Warning message, should appear in file and stdout.')
-    buph_logger.error('Error message, should appear in file and stdout.')
-    buph_logger.info("buph starting")
-    
     parser = define_cli_interface()
-
     args = parser.parse_args()
     if args.version:
         print(__version__)
         sys.exit(0)
 
-    rsync_options = []
-    if args.dry_run:
-        rsync_options.append("--dry-run")
-    if args.quiet:
-        rsync_options.append("-q")
-
+    backup_options = backup_options_from_cli(args)
 
     if (args.bu_type or args.to_drive) and not (args.to_drive and args.bu_type):
         buph_logger.info("Cannot specify only one and to-drive")
@@ -102,40 +112,17 @@ def main():
     dest_drives = DestinationDrives()
     scheduler = Scheduler(config, dest_drives)
 
+    if args.day_num:
+        daynum = args.day_num
+        request = scheduler.backup_request_for_daynumber(daynum)
+        backup(config, dest_drives, request, backup_options)
+
     # perform the backup specified on cli
-    if args.bu_type and args.to_drive:
+    elif args.bu_type and args.to_drive:
         buph_logger.info("Backup bu-type %s to-drive: %s" % (args.bu_type, args.to_drive))
-        try:
-            backup_from_cli_args(config, dest_drives, scheduler, args, rsync_options)
-            # bu_type = backup_type_from_cli(args.bu_type)
-            # if number_tranches(config, bu_type) > 1:
-            #     if not args.bu_tranche:
-            #         raise Exception("for this backup type require a bu-tranche option")
-            #     bu_tranche = backup_tranche_from_cli(args.bu_tranche)
-            # else:
-            #     bu_tranche = 0
-
-            # dl = to_drive_letter_from_cli(args.to_drive)
-            # vol_name = getDriveName(dl)
-            # ix = dest_drives.drive_index(vol_name)
-            # req = BackupRequest(bu_type, bu_tranche, ix)
-            # backup(config, dest_drives, req)
-        except: 
-            exception = sys.exc_info()[0]
-            print("Exception", exception)
-            raise(exception)
-
+        backup_from_cli_args(config, dest_drives, scheduler, backup_options, args)
     else:
         # perform the next backup in the schedule
-        try:
-            backup_from_schedule(config, dest_drives, scheduler, rsync_options)
-            # request = scheduler.backup_request_for_today()
-            # backup(config, dest_drives, request)
-        except:
-            exception = sys.exc_info()[0]
-            print("Exception", exception)
-            raise(exception)
+        backup_from_schedule(config, dest_drives, scheduler, backup_options)
 
-    # backup(config, dest_drives, BackupRequest(BackupType.CATALOGUED_IMAGE, 1, 0))
-    # backup(config, dest_drives, BackupRequest(BackupType.UNCATALOGUED_IMAGE, 0, 0))
-    # backup(config, dest_drives, BackupRequest(BackupType.CATALOG, 0, 0))
+    buph_logger.info("buph completed at %s elapsed time %s" % (time_now_as_str(), elapsed_time_as_str(start_time)))

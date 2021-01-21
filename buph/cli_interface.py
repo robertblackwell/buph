@@ -12,6 +12,8 @@ def define_global_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--quiet', dest='quiet', action='store_true',
                         help='Run rsync with -q flag')
 
+    parser.add_argument('--day-num', dest='day_num', type=int, action="store",
+                        help='Run with given day number')
 
     parser.add_argument('--bu-type', dest='bu_type',
                         help='The type of backup c = catalogs, p = catalogued photos, u = uncatalogued photos')
@@ -33,7 +35,5 @@ def define_global_args(parser: argparse.ArgumentParser) -> None:
 def define_cli_interface() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Backup Blackwell LR photo library.")
-    parser.add_argument('-v', '--version', action="store_true",
-                        help="Prints the version number.")
     define_global_args(parser)
     return parser

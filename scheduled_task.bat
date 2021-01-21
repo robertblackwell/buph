@@ -1,0 +1,1 @@
+python c:\cygwin64\home\lightroom\projects\buph\runner.py

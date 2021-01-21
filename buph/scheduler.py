@@ -57,11 +57,6 @@ class Scheduler:
         else:
             result = (2, tmp - self.config.number_tranches_catalogued_photos() - self.config.number_tranches_uncatalogued_photos(), dest_number)
         return result
-        ts, t, d = result
-        while not self.destination_drives.is_drive_index_available(d):
-            # print("d is %d" % (d))
-            d = (d + 1) % self.destination_drives.nbr_available_drives()
-        return (ts, t, d)
 
     def backup_request_for_daynumber(self, daynumber):
         ts, t, d = self._tranche_set_tranche_and_destination_for_a_daynumber(daynumber)

@@ -15,9 +15,13 @@ rsync_options = "-archW"
 cygwin_bash = 'c:\\cygwin64\\bin\\bash'
 cygwin_rsync = 'c:\\cygwin64\\home\\lightroom\\projects\\backup-photos\\rsync_run.sh'
 
+class BackupOptions:
+    def __init__(self):
+        self.dryrun = False
+        self.quiet = False
 
 def try_popen(cmd: List[str], where: str) -> int:
-    child = subprocess.Popen(cmd, cwd=where, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    child = subprocess.Popen(cmd, cwd=where, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, encoding="utf-8")
     # stdout, stderr = child.communicate()
 
     while True:
@@ -40,42 +44,66 @@ def rsync_cmd(opts, from_path, to_path):
     cmd = "rsync %s %s %s" % (opts, from_path, to_path)
     return cmd
 
-def bu_catalogued_photos(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
+def backup_options_to_rsync_options(backup_options: BackupOptions) -> List[str]:
+    opts = []
+    if backup_options.dryrun: opts.append("--dry-run")
+    if backup_options.quiet: 
+        opts.append("--quiet")
+    else:
+        opts.append("-v")
+    return opts
+
+def bu_catalogued_photos(
+    tranche, 
+    source_dir_path: WindowsPath, 
+    destination_dir: WindowsPath, 
+    backup_options: BackupOptions
+):
     for t in tranche:
         src = WindowsPath(source_dir_path, t)
-        options_list = ["-archW", "--dry-run", "-v", 
-        ]
+        options_list = ["-archW"] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
         buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 
-def bu_uncatalogued_photos(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
+def bu_uncatalogued_photos(
+    tranche, 
+    source_dir_path: WindowsPath, 
+    destination_dir: WindowsPath, 
+    backup_options: BackupOptions
+):
     for t in tranche:
         src = WindowsPath(source_dir_path, t)
-        options_list = ["-archW", "--dry-run", "-v", 
-        ]
+        options_list = ["-archW"] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
         buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 
-def bu_catalogs(tranche, source_dir_path: WindowsPath, destination_dir: WindowsPath):
+def bu_catalogs(
+    tranche, 
+    source_dir_path: WindowsPath, 
+    destination_dir: WindowsPath, 
+    backup_options: BackupOptions
+):
     for t in tranche:
         src = WindowsPath(source_dir_path, t)
-        options_list = ["-archW", "--dry-run", "-v", 
-            # "--exclude", '*\\ Previews.lrdata',
-            # "--exclude", 'Backups',
-        ]
+        options_list = ["-archW", "--exclude", "Backups", "--exclude", '*Previews.lrdata'] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
         buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 
-def backup(config: Config, destination_drives: DestinationDrives, request: BackupRequest):
+def backup(
+    config: Config, 
+    destination_drives: DestinationDrives, 
+    request: BackupRequest,
+    backup_options: BackupOptions
+):
 
     bu_for_set = [
         bu_catalogued_photos,
@@ -94,6 +122,8 @@ def backup(config: Config, destination_drives: DestinationDrives, request: Backu
     ]
     s = int(request.type)
     f = bu_for_set[s]
+    rsync_extra_options = request.rsync_options
+
     tranche = config.tranche_sets[s][request.tranche_index]
     src_dir: WindowsPath = source_dir[s]
     dest_drive_letter =  destination_drives.drive_letter_for_index(request.destination_drive_index)
@@ -107,7 +137,7 @@ def backup(config: Config, destination_drives: DestinationDrives, request: Backu
     # 
     # these functions perform rsync src_dir/tranch[i]  dest_dir
     # 
-    f(tranche, src_dir, dest_dir)
+    f(tranche, src_dir, dest_dir, backup_options)
 
 if __name__ == '__main__':
 
