@@ -89,7 +89,7 @@ def elapsed_time_as_str(start_time):
     elap = str(timedelta(seconds=timer() - start_time))
     return elap
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 @buph_logger.catch
 def main():
