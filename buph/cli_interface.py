@@ -4,7 +4,7 @@ import argparse
 # define global argument and options
 #
 def define_global_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument('--version, -v', dest='version',
+    parser.add_argument('--version, -v', dest='version', action='store_true',
                         help='Print version ')
     parser.add_argument('--dry-run', dest='dry_run', action='store_true',
                         help='Dry run flag passed to rsync .\n Default false')

@@ -94,13 +94,14 @@ __version__ = "1.0.0"
 @buph_logger.catch
 def main():
     start_time = timer()
-    buph_logger.info("buph starting at %s" % (time_now_as_str()))
-
+ 
     parser = define_cli_interface()
     args = parser.parse_args()
     if args.version:
         print(__version__)
         sys.exit(0)
+
+    buph_logger.info("buph starting at %s" % (time_now_as_str()))
 
     backup_options = backup_options_from_cli(args)
 
