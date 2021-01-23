@@ -2,10 +2,13 @@ import typing
 import subprocess 
 from datetime import datetime
 import math
+from buph.config import Config
 
 class DestinationDrives:
-    def __init__(self):
-        self.drive_names = "LR_DUP", "BUP_PHOTO", "Photographs"
+    def __init__(self, config: Config):
+        self.drive_names = config.destination_dirs
+        self.candidate_drive_letters = config.candidate_drive_letters
+
         self.available_destination_drives = {}
         self._discover_available_drives()
 
@@ -17,7 +20,7 @@ class DestinationDrives:
 
 
     def _discover_available_drives(self):
-        for d in ["E:", "F:", "G:", "H:"]:
+        for d in self.candidate_drive_letters:
             dn = getDriveName(d)
             if dn is not None:
                 self.available_destination_drives[dn] = d 
@@ -50,8 +53,9 @@ class DestinationDrives:
 # gets the volume name from a drive letter
 # dont pass in C:
 # returns None if no drive has the passed in letter
-def getDriveName(driveletter):
-    child = subprocess.Popen(["cmd","/c vol "+driveletter], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def getDriveName(driveletter: str):
+    dl = driveletter + ":" if len(driveletter) == 1 else driveletter 
+    child = subprocess.Popen(["cmd","/c vol "+dl], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     raw_bytes = child.communicate()
     rc = child.returncode
     if rc == 0:

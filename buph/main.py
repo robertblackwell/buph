@@ -91,39 +91,44 @@ def elapsed_time_as_str(start_time):
 
 __version__ = "1.0.1"
 
-@buph_logger.catch
+
 def main():
     start_time = timer()
- 
-    parser = define_cli_interface()
-    args = parser.parse_args()
-    if args.version:
-        print(__version__)
-        sys.exit(0)
+    try:
+    
+        parser = define_cli_interface()
+        args = parser.parse_args()
+        if args.version:
+            print(__version__)
+            sys.exit(0)
 
-    buph_logger.info("buph starting at %s" % (time_now_as_str()))
+        buph_logger.info("buph starting at %s" % (time_now_as_str()))
 
-    backup_options = backup_options_from_cli(args)
+        backup_options = backup_options_from_cli(args)
 
-    if (args.bu_type or args.to_drive) and not (args.to_drive and args.bu_type):
-        buph_logger.info("Cannot specify only one and to-drive")
-        sys.exit(1)
+        if (args.bu_type or args.to_drive) and not (args.to_drive and args.bu_type):
+            buph_logger.info("Cannot specify only one and to-drive")
+            sys.exit(1)
 
-    config = Config()
-    dest_drives = DestinationDrives()
-    scheduler = Scheduler(config, dest_drives)
+        config = Config()
+        dest_drives = DestinationDrives(config)
+        scheduler = Scheduler(config, dest_drives)
 
-    if args.day_num:
-        daynum = args.day_num
-        request = scheduler.backup_request_for_daynumber(daynum)
-        backup(config, dest_drives, request, backup_options)
+        if args.day_num:
+            daynum = args.day_num
+            request = scheduler.backup_request_for_daynumber(daynum)
+            backup(config, dest_drives, request, backup_options)
 
-    # perform the backup specified on cli
-    elif args.bu_type and args.to_drive:
-        buph_logger.info("Backup bu-type %s to-drive: %s" % (args.bu_type, args.to_drive))
-        backup_from_cli_args(config, dest_drives, scheduler, backup_options, args)
-    else:
-        # perform the next backup in the schedule
-        backup_from_schedule(config, dest_drives, scheduler, backup_options)
-
+        # perform the backup specified on cli
+        elif args.bu_type and args.to_drive:
+            buph_logger.info("Backup bu-type %s to-drive: %s" % (args.bu_type, args.to_drive))
+            backup_from_cli_args(config, dest_drives, scheduler, backup_options, args)
+        else:
+            # perform the next backup in the schedule
+            backup_from_schedule(config, dest_drives, scheduler, backup_options)
+   
+    except Exception: 
+        buph_logger.exception("Exception in main")
+    
     buph_logger.info("buph completed at %s elapsed time %s" % (time_now_as_str(), elapsed_time_as_str(start_time)))
+    

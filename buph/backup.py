@@ -15,21 +15,30 @@ rsync_options = "-archW"
 cygwin_bash = 'c:\\cygwin64\\bin\\bash'
 cygwin_rsync = 'c:\\cygwin64\\home\\lightroom\\projects\\backup-photos\\rsync_run.sh'
 
+def replace_trash(unicode_string):
+     for i in range(0, len(unicode_string)):
+         try:
+             unicode_string[i].encode("ascii")
+         except:
+              #means it's non-ASCII
+              unicode_string=unicode_string[i].replace(" ") #replacing it with a single space
+     return unicode_string
+
 class BackupOptions:
     def __init__(self):
         self.dryrun = False
         self.quiet = False
 
 def try_popen(cmd: List[str], where: str) -> int:
-    child = subprocess.Popen(cmd, cwd=where, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, encoding="utf-8")
+    child = subprocess.Popen(cmd, cwd=where, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)#, encoding="utf-8")
     # stdout, stderr = child.communicate()
 
     while True:
-        output = child.stdout.readline()
+        output = child.stdout.readline().strip()
         if output == '' and child.poll() is not None:
             break
         if output:
-            buph_logger.info(output.strip())
+            buph_logger.info(output)
     rc = child.poll()
     return rc
 
@@ -64,7 +73,7 @@ def bu_catalogued_photos(
         options_list = ["-archW"] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
-        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        # buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 
@@ -79,7 +88,7 @@ def bu_uncatalogued_photos(
         options_list = ["-archW"] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
-        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        # buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 
@@ -94,7 +103,7 @@ def bu_catalogs(
         options_list = ["-archW", "--exclude", "Backups", "--exclude", '*Previews.lrdata'] + backup_options_to_rsync_options(backup_options)
         home = WindowsPath.home()
         cmd_list = cygwin.rsync_cmd(options_list, home, src, destination_dir)
-        buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
+        # buph_logger.info("bu_catalogued_photos       %s" %(" ".join(cmd_list)))
         if try_popen(cmd_list, str(WindowsPath.home())) != 0:
             raise Exception("try_popen returns rc != 0")
 

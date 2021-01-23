@@ -38,6 +38,7 @@ class Config:
         self.destination_dirs = [
             "LR_DUP", "BUP_PHOTO", "Photographs"
         ]
+        self.candidate_drive_letters = ["e", "f", "g", "h"]
 
     def number_tranches_catalogued_photos(self):
         return len(self.tranches_catalogued_photos)

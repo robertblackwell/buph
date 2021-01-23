@@ -1,4 +1,4 @@
 ## Things to do
 
--   need some form of logging
--   setup a regular schedule for backup
+-   destination_drives.py should not have its own list of volume names
+-   what would it take to run this as a wsl app 

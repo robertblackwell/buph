@@ -28,5 +28,8 @@ def rsync_cmd(extra_options:List[str], cwd: WindowsPath, src_dir: WindowsPath, d
         str(path_windows_to_posix(src_dir)), 
         str(path_windows_to_posix(dest_dir))]
 
-    buph_logger.info("cygwin rsync_run(%s %s %s %s)" %(" ".join(extra_options), cwd, src_dir, dest_dir))
+    buph_logger.info("cygwin rsync_run options : %s " %(" ".join(extra_options)))
+    buph_logger.info("                 cwd     : %s " %(cwd))
+    buph_logger.info("                 src_dir : %s " %(src_dir))
+    buph_logger.info("                 dest_dir: %s " %(dest_dir))
     return cmd
